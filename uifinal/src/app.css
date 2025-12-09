@@ -1,0 +1,13 @@
+:root {
+  /*Map*/
+  --map-background: rgb(52, 118, 134);
+  --map-color: rgb(158, 219, 131);
+  --map-stroke: rgb(0, 0, 0);
+  --map-hover: tomato;
+
+  /* Map Zoom*/
+  --map-zoom-background: rgb(255, 255, 255);
+  --map-zoom-hover: rgb(185, 185, 185);
+  --map-zoom-disabled: rgb(240, 240, 240);
+  background-color: var(--map-background);
+}
