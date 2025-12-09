@@ -1,28 +1,329 @@
 <script>
-  let query = "";
-  let zoom = 1;
+  import { createEventDispatcher, onMount } from 'svelte';
+  
+  const dispatch = createEventDispatcher();
 
-  function highlightCountry(name) {
+  let selectedCountry = null;
+
+  // Country food donation need values (1-100 scale)
+  const countryNeeds = {
+    "Afghanistan": 95,
+    "Albania": 35,
+    "Algeria": 45,
+    "Andorra": 5,
+    "Angola": 85,
+    "Antigua and Barbuda": 40,
+    "Argentina": 55,
+    "Armenia": 50,
+    "Australia": 10,
+    "Austria": 15,
+    "Azerbaijan": 48,
+    "Bahamas": 30,
+    "Bahrain": 20,
+    "Bangladesh": 78,
+    "Barbados": 25,
+    "Belarus": 45,
+    "Belgium": 12,
+    "Belize": 55,
+    "Benin": 75,
+    "Bhutan": 60,
+    "Bolivia": 68,
+    "Bosnia and Herzegovina": 48,
+    "Botswana": 52,
+    "Brazil": 62,
+    "Brunei Darussalam": 15,
+    "Bulgaria": 40,
+    "Burkina Faso": 88,
+    "Burundi": 92,
+    "Cambodia": 72,
+    "Cameroon": 80,
+    "Canada": 18,
+    "Central African Republic": 89,
+    "Chad": 94,
+    "Chile": 35,
+    "China": 28,
+    "Colombia": 58,
+    "Comoros": 82,
+    "Congo": 76,
+    "Costa Rica": 32,
+    "Côte d'Ivoire": 70,
+    "Croatia": 38,
+    "Cuba": 45,
+    "Cyprus": 22,
+    "Czech Republic": 20,
+    "Democratic Republic of the Congo": 90,
+    "Denmark": 10,
+    "Djibouti": 85,
+    "Dominica": 42,
+    "Dominican Republic": 52,
+    "Ecuador": 60,
+    "Egypt": 65,
+    "El Salvador": 58,
+    "Equatorial Guinea": 70,
+    "Eritrea": 88,
+    "Estonia": 18,
+    "Ethiopia": 87,
+    "Fiji": 48,
+    "Finland": 12,
+    "France": 15,
+    "Gabon": 50,
+    "Gambia": 79,
+    "Georgia": 48,
+    "Germany": 14,
+    "Ghana": 68,
+    "Greece": 30,
+    "Grenada": 40,
+    "Guatemala": 72,
+    "Guinea": 84,
+    "Guinea-Bissau": 86,
+    "Guyana": 62,
+    "Haiti": 91,
+    "Honduras": 70,
+    "Hungary": 32,
+    "Iceland": 8,
+    "India": 75,
+    "Indonesia": 64,
+    "Iran": 52,
+    "Iraq": 78,
+    "Ireland": 15,
+    "Israel": 25,
+    "Italy": 25,
+    "Jamaica": 55,
+    "Japan": 18,
+    "Jordan": 68,
+    "Kazakhstan": 40,
+    "Kenya": 82,
+    "Kiribati": 65,
+    "Kuwait": 18,
+    "Kyrgyzstan": 72,
+    "Laos": 80,
+    "Latvia": 22,
+    "Lebanon": 75,
+    "Lesotho": 78,
+    "Liberia": 86,
+    "Libya": 60,
+    "Liechtenstein": 5,
+    "Lithuania": 20,
+    "Luxembourg": 8,
+    "Madagascar": 85,
+    "Malawi": 88,
+    "Malaysia": 35,
+    "Maldives": 30,
+    "Mali": 91,
+    "Malta": 15,
+    "Marshall Islands": 62,
+    "Mauritania": 84,
+    "Mauritius": 28,
+    "Mexico": 52,
+    "Micronesia": 68,
+    "Moldova": 55,
+    "Monaco": 5,
+    "Mongolia": 58,
+    "Montenegro": 38,
+    "Morocco": 62,
+    "Mozambique": 89,
+    "Myanmar": 76,
+    "Namibia": 65,
+    "Nauru": 50,
+    "Nepal": 82,
+    "Netherlands": 12,
+    "New Zealand": 15,
+    "Nicaragua": 72,
+    "Niger": 96,
+    "Nigeria": 79,
+    "North Korea": 85,
+    "North Macedonia": 42,
+    "Norway": 10,
+    "Oman": 35,
+    "Pakistan": 80,
+    "Palau": 48,
+    "Palestine": 72,
+    "Panama": 50,
+    "Papua New Guinea": 78,
+    "Paraguay": 58,
+    "Peru": 65,
+    "Philippines": 70,
+    "Poland": 28,
+    "Portugal": 22,
+    "Qatar": 15,
+    "Republic of Congo": 75,
+    "Romania": 38,
+    "Russia": 35,
+    "Rwanda": 80,
+    "Saint Kitts and Nevis": 38,
+    "Saint Lucia": 42,
+    "Saint Vincent and the Grenadines": 45,
+    "Samoa": 52,
+    "San Marino": 8,
+    "Sao Tome and Principe": 68,
+    "Saudi Arabia": 25,
+    "Senegal": 78,
+    "Serbia": 40,
+    "Seychelles": 25,
+    "Sierra Leone": 89,
+    "Singapore": 12,
+    "Slovakia": 20,
+    "Slovenia": 15,
+    "Solomon Islands": 72,
+    "Somalia": 95,
+    "South Africa": 68,
+    "South Korea": 15,
+    "South Sudan": 98,
+    "Spain": 28,
+    "Sri Lanka": 65,
+    "Sudan": 92,
+    "Suriname": 55,
+    "Sweden": 10,
+    "Switzerland": 12,
+    "Syria": 88,
+    "Taiwan": 18,
+    "Tajikistan": 82,
+    "Tanzania": 81,
+    "Thailand": 50,
+    "Timor-Leste": 75,
+    "Togo": 82,
+    "Tonga": 55,
+    "Trinidad and Tobago": 42,
+    "Tunisia": 55,
+    "Turkey": 60,
+    "Turkmenistan": 65,
+    "Tuvalu": 60,
+    "Uganda": 85,
+    "Ukraine": 70,
+    "United Arab Emirates": 15,
+    "United Kingdom": 20,
+    "United States": 18,
+    "Uruguay": 35,
+    "Uzbekistan": 68,
+    "Vanuatu": 65,
+    "Venezuela": 88,
+    "Vietnam": 60,
+    "Yemen": 98,
+    "Zambia": 86,
+    "Zimbabwe": 84
+  };
+
+  export function getCountryNeed(countryName) {
+    return countryNeeds[countryName] || null;
+  }
+
+  // Return the top N countries sorted by need (descending)
+  export function getTopCountries(count = 3) {
+    return Object.entries(countryNeeds)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, count)
+      .map(([name]) => name);
+  }
+
+  export function highlightCountry(name) {
     // Normalize the search (case-insensitive + trim)
     const search = name.trim().toLowerCase();
 
-    // Remove highlights from all paths
+    // Restore all country colors
     document.querySelectorAll("path").forEach((p) => {
-      /** @type {SVGElement} */ (p).style.fill = "";
+      const countryId = p.id;
+      if (countryId && !countryId.match(/^\d+$/)) {
+        const need = countryNeeds[countryId] || 50;
+        const intensity = Math.min(need / 100, 1);
+        const r = Math.round(255 * intensity);
+        const g = Math.round(117 * (1 - intensity * 0.7));
+        const b = Math.round(117 * (1 - intensity * 0.7));
+        const a = 0.81;
+        
+        /** @type {SVGElement} */ (p).style.fill = `rgba(${r}, ${g}, ${b}, ${a})`;
+      }
     });
 
-    // Highlight all matching parts by ID (case-insensitive)
+    let foundCountry = null;
+
+    // Highlight matching country with full opacity for visibility
     document.querySelectorAll("path").forEach((p) => {
       const id = p.id?.trim().toLowerCase();
       if (id === search) {
-        /** @type {SVGElement} */ (p).style.fill = "tomato";
+        const countryName = p.id;
+        const need = countryNeeds[countryName] || 50;
+        // Make it fully opaque for better visibility when searching
+        const intensity = Math.min(need / 100, 1);
+        const r = Math.round(255 * intensity);
+        const g = Math.round(117 * (1 - intensity * 0.7));
+        const b = Math.round(117 * (1 - intensity * 0.7));
+        const a = 1.0;
+        
+        /** @type {SVGElement} */ (p).style.fill = `rgba(${r}, ${g}, ${b}, ${a})`;
+        foundCountry = countryName;
+      }
+    });
+
+    return foundCountry;
+  }
+
+  export function getSelectedCountry() {
+    return selectedCountry;
+  }
+
+  export function setSelectedCountry(countryName) {
+    if (!countryName) return;
+    selectedCountry = countryName;
+    applySelectionHighlight();
+  }
+
+  function applySelectionHighlight() {
+    document.querySelectorAll('path').forEach((p) => {
+      const id = p.id;
+      if (!id || id.match(/^\d+$/)) return;
+
+      const need = countryNeeds[id] || 50;
+      const intensity = Math.min(need / 100, 1);
+      const r = Math.round(255 * intensity);
+      const g = Math.round(117 * (1 - intensity * 0.7));
+      const b = Math.round(117 * (1 - intensity * 0.7));
+
+      if (id === selectedCountry) {
+        // make selected country stand out
+        p.style.stroke = '#000';
+        p.style.strokeWidth = '2';
+        p.style.filter = 'drop-shadow(0 0 6px rgba(0,0,0,0.45))';
+        p.style.fill = `rgba(${r}, ${g}, ${b}, 1)`;
+        // bring selected element to front for visibility
+        try { p.parentNode.appendChild(p); } catch (e) {}
+      } else {
+        p.style.stroke = '';
+        p.style.strokeWidth = '';
+        p.style.filter = '';
+        p.style.fill = `rgba(${r}, ${g}, ${b}, 0.81)`;
       }
     });
   }
 
-  function search() {
-    highlightCountry(query);
+  function handlePathClick(event) {
+    const countryId = event.target.id;
+    if (countryId && !countryId.match(/^\d+$/)) {
+      // use the setter so highlighting is applied consistently
+      setSelectedCountry(countryId);
+      console.log("Selected country:", selectedCountry);
+      dispatch('countrySelected', { country: selectedCountry });
+    }
   }
+
+  function applyCountryColors() {
+    document.querySelectorAll("path").forEach((p) => {
+      const countryId = p.id;
+      if (countryId && !countryId.match(/^\d+$/)) {
+        const need = countryNeeds[countryId] || 50;
+        const intensity = Math.min(need / 100, 1);
+        const r = Math.round(255 * intensity);
+        const g = Math.round(117 * (1 - intensity * 0.7));
+        const b = Math.round(117 * (1 - intensity * 0.7));
+        const a = 0.81;
+        
+        /** @type {SVGElement} */ (p).style.fill = `rgba(${r}, ${g}, ${b}, ${a})`;
+      }
+    });
+  }
+
+  onMount(() => {
+    applyCountryColors();
+  });
 
 </script>
 
@@ -56,7 +357,7 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     THE SOFTWARE.
     -->
-    <svg style="transform : scale({zoom}); transform-origin: top left;" baseProfile="tiny" fill="#ececec" height="857" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width=".2" version="1.2" viewBox="0 0 2000 857" width="2000" xmlns="http://www.w3.org/2000/svg">
+    <svg on:click={handlePathClick} style="transform : scale({1}); transform-origin: top left;" baseProfile="tiny" fill="#ececec" height="857" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width=".2" version="1.2" viewBox="0 0 2000 857" width="2000" xmlns="http://www.w3.org/2000/svg">
     <path d="M1383 261.6l1.5 1.8-2.9 0.8-2.4 1.1-5.9 0.8-5.3 1.3-2.4 2.8 1.9 2.7 1.4 3.2-2 2.7 0.8 2.5-0.9 2.3-5.2-0.2 3.1 4.2-3.1 1.7-1.4 3.8 1.1 3.9-1.8 1.8-2.1-0.6-4 0.9-0.2 1.7-4.1 0-2.3 3.7 0.8 5.4-6.6 2.7-3.9-0.6-0.9 1.4-3.4-0.8-5.3 1-9.6-3.3 3.9-5.8-1.1-4.1-4.3-1.1-1.2-4.1-2.7-5.1 1.6-3.5-2.5-1 0.5-4.7 0.6-8 5.9 2.5 3.9-0.9 0.4-2.9 4-0.9 2.6-2-0.2-5.1 4.2-1.3 0.3-2.2 2.9 1.7 1.6 0.2 3 0 4.3 1.4 1.8 0.7 3.4-2 2.1 1.2 0.9-2.9 3.2 0.1 0.6-0.9-0.2-2.6 1.7-2.2 3.3 1.4-0.1 2 1.7 0.3 0.9 5.4 2.7 2.1 1.5-1.4 2.2-0.6 2.5-2.9 3.8 0.5 5.4 0z" id="Afghanistan" name="Afghanistan">
     </path>
     <path id="Angola" d="M 1121.2 572 1121.8 574 1121.1 577.1 1122 580.1 1121.1 582.5 1121.5 584.7 1109.8 584.6 1109 605.1 1112.6 610.3 1116.2 614.3 1105.8 616.9 1092.3 616 1088.5 613 1065.8 613.2 1065 613.7 1061.7 610.8 1058.1 610.6 1054.7 611.7 1052 612.9 1051.5 608.9 1052.4 603.2 1054.4 597.3 1054.7 594.6 1056.6 588.8 1058 586.2 1061.3 582 1063.2 579.1 1063.8 574.4 1063.5 570.7 1061.9 568.4 1060.4 564.5 1059.1 560.7 1059.4 559.3 1061.1 556.8 1059.5 550.6 1058.3 546.3 1055.5 542.2 1056.1 541 1058.4 540.1 1060.1 540.2 1062.1 539.5 1078.8 539.6 1080.1 544.3 1081.7 548.2 1083 550.3 1085.1 553.6 1088.9 553.1 1090.7 552.2 1093.8 553.1 1094.7 551.5 1096.2 547.8 1099.7 547.5 1100 546.4 1102.9 546.4 1102.4 548.7 1109.2 548.6 1109.3 552.7 1110.4 555.1 1109.5 559 1109.9 563 1111.7 565.4 1111.3 573 1112.7 572.4 1115.1 572.6 1118.6 571.6 1121.2 572 Z">
@@ -89,9 +390,9 @@
     </path>
     <path d="M1006.7 427l-0.2 2.1 1.3 3.8-1.1 2.6 0.6 1.7-2.8 4-1.7 2-1.1 4 0.2 4.1-0.3 10.3-4.7 0.8-1.4-4.4 0.3-14.8-1.2-1.3-0.2-3.2-2-2.2-1.7-1.9 0.7-3.4 2-0.7 1.1-2.8 2.8-0.6 1.2-1.9 1.9-1.9 2 0 4.3 3.7z" id="Benin" name="Benin">
     </path>
-    <path d="M988.5 406l-0.5 3.1 0.8 2.9 3.1 4.2 0.2 3.1 6.5 1.5-0.1 4.4-1.2 1.9-2.8 0.6-1.1 2.8-2 0.7-4.9-0.1-2.6-0.5-1.8 1-2.5-0.5-9.8 0.3-0.2 3.7 0.8 4.8-3.9-1.6-2.6 0.2-2 1.6-2.5-1.3-1-2.2-2.5-1.4-0.4-3.7 1.6-2.7-0.2-2.2 4.5-5.3 0.9-4.4 1.5-1.6 2.7 0.9 2.4-1.3 0.8-1.7 4.3-2.8 1.1-2 5.3-2.7 3.1-0.9 1.4 1.2 3.6 0z" id="BF" name="Burkina Faso">
+    <path d="M988.5 406l-0.5 3.1 0.8 2.9 3.1 4.2 0.2 3.1 6.5 1.5-0.1 4.4-1.2 1.9-2.8 0.6-1.1 2.8-2 0.7-4.9-0.1-2.6-0.5-1.8 1-2.5-0.5-9.8 0.3-0.2 3.7 0.8 4.8-3.9-1.6-2.6 0.2-2 1.6-2.5-1.3-1-2.2-2.5-1.4-0.4-3.7 1.6-2.7-0.2-2.2 4.5-5.3 0.9-4.4 1.5-1.6 2.7 0.9 2.4-1.3 0.8-1.7 4.3-2.8 1.1-2 5.3-2.7 3.1-0.9 1.4 1.2 3.6 0z" id="Burkina Faso" name="Burkina Faso">
     </path>
-    <path d="M1500.6 360.3l0.6 4.6-2.1-1 1.1 5.2-2.1-3.3-0.8-3.3-1.5-3.1-2.8-3.7-5.2-0.3 0.9 2.7-1.2 3.5-2.6-1.3-0.6 1.2-1.7-0.7-2.2-0.6-1.6-5.3-2.6-4.8 0.3-3.9-3.7-1.7 0.9-2.3 3-2.4-4.6-3.4 1.2-4.4 4.9 2.8 2.7 0.3 1.2 4.5 5.4 0.9 5.1-0.1 3.4 1.1-1.6 5.4-2.4 0.4-1.2 3.6 3.6 3.4 0.3-4.2 1.5 0 4.4 10.2z" id="BD" name="Bangladesh">
+    <path d="M1500.6 360.3l0.6 4.6-2.1-1 1.1 5.2-2.1-3.3-0.8-3.3-1.5-3.1-2.8-3.7-5.2-0.3 0.9 2.7-1.2 3.5-2.6-1.3-0.6 1.2-1.7-0.7-2.2-0.6-1.6-5.3-2.6-4.8 0.3-3.9-3.7-1.7 0.9-2.3 3-2.4-4.6-3.4 1.2-4.4 4.9 2.8 2.7 0.3 1.2 4.5 5.4 0.9 5.1-0.1 3.4 1.1-1.6 5.4-2.4 0.4-1.2 3.6 3.6 3.4 0.3-4.2 1.5 0 4.4 10.2z" id="Bangladesh" name="Bangladesh">
     </path>
     <path d="M1132.6 221.6l-2.3 2.6-1.3 4.5 2.1 3.6-4.6-0.8-5 2 0.3 3.2-4.6 0.6-3.9-2.3-4 1.8-3.8-0.2-0.8-4.2-2.8-2.1 0.7-0.8-0.6-0.8 0.6-2 1.8-2-2.8-2.7-0.7-2.4 1.1-1.4 1.8 2.6 1.9-0.4 4 0.9 7.6 0.4 2.3-1.6 5.9-1.5 4 2.3 3.1 0.7z" id="Bulgaria" name="Bulgaria">
     </path>
@@ -563,7 +864,7 @@
     </path>
     <path id="United States" d="M 410 66.6 385.4 87 349.8 119.7 354 119.9 356.8 121.5 357.3 124.1 357.6 127.9 365.2 124.6 371.7 122.7 371.1 125.8 371.9 128.2 373.5 130.9 372.4 135.1 371 142 375.6 145.8 372.4 149.6 367.3 152.5 366.7 150.3 364.2 148.3 367.5 143.1 365.9 138.2 368.6 132.6 364.5 132.2 357.4 132.1 353.6 130.3 350.3 124.2 347 123.1 341.3 121 334.5 121.5 328.5 118.8 325.8 116.3 319.5 117.5 316 121.6 313.1 122 306.5 123.2 300.3 125.2 293.9 126.5 297.1 123 305.5 117.2 312.3 115.4 312.7 114 303.3 117.2 295.9 121.1 284.7 125.3 284.9 128.2 275.9 132.4 268.2 134.9 261.6 136.8 257.6 139.4 247 142.5 242.5 145.3 234.3 147.9 231.6 147.5 225.4 149.1 218.4 151.2 212.3 153.2 202.3 155 202.7 153.9 210.9 151.1 217.5 149.2 226.1 145.9 232.6 145.3 237.6 142.8 248 139.2 250.3 138 256 135.9 261.8 131.4 268 127.9 260.7 129.7 260.4 128.6 255.5 130.8 255.9 127.8 252.3 129.9 253.9 127 246.6 129.3 243.8 129.3 247.5 125.8 250.8 123.6 250.4 121.5 243.2 122.7 242.6 119.9 241.3 118.5 245.3 115.2 244.9 112.7 250.8 109.4 258.5 106.1 263.8 103.2 267.9 102.8 269.7 103.7 276.8 100.9 279.3 101.4 284.9 99.6 287.4 97 286.3 96 292.3 93.8 289.5 93.9 283.3 95.1 280.4 96.4 278.6 95.1 271.7 95.8 267.1 94.4 268.3 92.1 267.3 88.9 276.5 86.5 289.7 83.8 293.2 83.8 288.9 86.6 298.1 86.4 299.3 82.9 297 80.8 297.8 78 297.1 75.7 293.8 74 300.3 71.1 307.8 70.9 316.6 68.5 321.4 65.9 329.3 63.3 334.1 62.7 345.3 60.3 348.4 60.7 358.8 57.9 363.2 59 362.7 61.4 366 60.4 372.3 60.7 370.4 61.9 375.3 62.8 380.2 62.3 386.4 63.9 393.6 64.5 395.8 65.1 402.4 64.3 406.5 65.9 410 66.6 Z">
     </path>
-    <path d="M677.3 487l1.5-2.8 0.5-2.9 1-2.7-2.1-3.8-0.3-4.4 3.1-5.5 1.9 0.7 4.1 1.5 5.9 5.4 0.8 2.6-3.4 5.9-1.8 4.7-2.2 2.5-2.7 0.4-0.8-1.8-1.3-0.2-1.7 1.7-2.5-1.3z" id="GF" name="French Guiana">
+    <path d="M677.3 487l1.5-2.8 0.5-2.9 1-2.7-2.1-3.8-0.3-4.4 3.1-5.5 1.9 0.7 4.1 1.5 5.9 5.4 0.8 2.6-3.4 5.9-1.8 4.7-2.2 2.5-2.7 0.4-0.8-1.8-1.3-0.2-1.7 1.7-2.5-1.3z" id="French Guiana" name="French Guiana">
     </path>
     <path d="M592.9 422l-0.5-0.2-0.5-0.5 0.1-0.6 0.2 0.3 0.4 0.4 0.3 0.5 0 0.1z" id="Aruba" name="Aruba">
     </path>
@@ -1005,71 +1306,29 @@
     </circle>
     </svg>
   </div>
-
-  <div class="search-bar">
-    <input
-    placeholder="Search for a country..."
-    bind:value={query}
-    on:input={search}
-    class="search-input">
-  </div>
-
 </div>
 
 <style>
   .world-map {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: max-content;
-    height: max-content;
-    min-height: 30em;
     background-color: var(--map-background);
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+    overflow-x: hidden;
   }
 
   svg {
-    width: 100vw;
+    width: 100%;
+    height: auto;
   }
 
   path {
     fill: var(--map-color);
     stroke: var(--map-stroke);
     transition: 100ms;
+    backdrop-filter: blur(10px);
+    cursor: pointer;
   }
-  path:hover {
-    fill: var(--map-hover);
-  }
-
-.search-bar {
-  position: fixed;
-  top: 1em;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 300px;
-  z-index: 2000;
-}
-
-.search-input {
-  width: 100%;
-  padding: 0.5em 1em;
-  border: 1px solid #aaa;
-  border-radius: 0.6em;
-  font-size: 1em;
-  outline: none;
-  background-color: white;
-  box-shadow: 0px 2px 4px rgba(0,0,0,0.15);
-  transition: box-shadow 150ms, border 150ms;
-}
-
-/* Focus effect */
-.search-input:focus {
-  border-color: #1e90ff;
-  box-shadow: 0px 3px 6px rgba(30,144,255,0.4);
-}
-
 
 </style>
